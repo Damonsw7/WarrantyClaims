@@ -1,0 +1,138 @@
+@page
+@model WarrantyClaims.Pages.NewClaimModel
+@using Microsoft.AspNetCore.Mvc.Rendering
+@{
+    ViewData["Title"] = "New Claim";
+}
+
+<h1>@ViewData["Title"]</h1>
+
+@if (Model.IsAgentVerified)
+{
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <span class="text-muted">Signed in as <strong>@Model.VerifiedAgentName</strong></span>
+        <form method="post" asp-page-handler="Logout" class="m-0">
+            <button type="submit" class="btn btn-link btn-sm p-0">Log out</button>
+        </form>
+    </div>
+}
+
+@if (!string.IsNullOrEmpty(Model.ErrorMessage))
+{
+    <div class="alert alert-danger" role="alert">@Model.ErrorMessage</div>
+}
+
+@if (!Model.IsAgentVerified)
+{
+    <div class="pin-entry-wrapper">
+        <form method="post" asp-page-handler="VerifyPin">
+            <h5 class="mb-3">Enter Agent PIN</h5>
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+            <div class="pin-boxes mb-3" data-hidden-target="PinInput">
+                <input type="text" inputmode="numeric" pattern="[0-9]*" maxlength="1" class="form-control pin-digit-input" autocomplete="off" autofocus />
+                <input type="text" inputmode="numeric" pattern="[0-9]*" maxlength="1" class="form-control pin-digit-input" autocomplete="off" />
+                <input type="text" inputmode="numeric" pattern="[0-9]*" maxlength="1" class="form-control pin-digit-input" autocomplete="off" />
+                <input type="text" inputmode="numeric" pattern="[0-9]*" maxlength="1" class="form-control pin-digit-input" autocomplete="off" />
+            </div>
+            <input type="hidden" id="PinInput" name="PinInput" />
+            <span asp-validation-for="PinInput" class="text-danger d-block mb-2"></span>
+
+            <button type="submit" class="btn btn-primary">Continue</button>
+        </form>
+    </div>
+}
+else
+{
+    <form method="post" enctype="multipart/form-data">
+    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+    <div class="mb-3">
+        <label class="form-label">Assigned Agent</label>
+        <input type="text" class="form-control" value="@Model.VerifiedAgentName" readonly />
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="Input.CustomerName" class="form-label"></label>
+        <input asp-for="Input.CustomerName" class="form-control" />
+        <span asp-validation-for="Input.CustomerName" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="Input.CustomerEmail" class="form-label"></label>
+        <input asp-for="Input.CustomerEmail" class="form-control" />
+        <span asp-validation-for="Input.CustomerEmail" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="Input.ProductName" class="form-label"></label>
+        <input asp-for="Input.ProductName" class="form-control" />
+        <span asp-validation-for="Input.ProductName" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="Input.SerialNumber" class="form-label"></label>
+        <input asp-for="Input.SerialNumber" class="form-control" />
+        <span asp-validation-for="Input.SerialNumber" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="Input.PurchaseDate" class="form-label"></label>
+        <input asp-for="Input.PurchaseDate" class="form-control" />
+        <span asp-validation-for="Input.PurchaseDate" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="Input.ClaimType" class="form-label"></label>
+        <select asp-for="Input.ClaimType" class="form-select" asp-items="@(new SelectList(Model.ClaimTypes))">
+            <option value="">-- Select a claim type --</option>
+        </select>
+        <span asp-validation-for="Input.ClaimType" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="Input.IssueDescription" class="form-label"></label>
+        <textarea asp-for="Input.IssueDescription" class="form-control" rows="4"></textarea>
+        <span asp-validation-for="Input.IssueDescription" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="Input.ManufacturerDeadline" class="form-label"></label>
+        <input asp-for="Input.ManufacturerDeadline" class="form-control" />
+        <span asp-validation-for="Input.ManufacturerDeadline" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="Input.WarrantyExpiry" class="form-label"></label>
+        <input asp-for="Input.WarrantyExpiry" class="form-control" />
+        <span asp-validation-for="Input.WarrantyExpiry" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="Input.Photo" class="form-label"></label>
+        <input asp-for="Input.Photo" type="file" class="form-control" accept=".jpg,.jpeg,.png,.pdf" />
+        <div class="form-text">JPG, PNG, or PDF. Max 10MB.</div>
+        <span asp-validation-for="Input.Photo" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="Input.Receipt" class="form-label"></label>
+        <input asp-for="Input.Receipt" type="file" class="form-control" accept=".jpg,.jpeg,.png,.pdf" />
+        <div class="form-text">JPG, PNG, or PDF. Max 10MB.</div>
+        <span asp-validation-for="Input.Receipt" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="Input.ProofOfPurchase" class="form-label"></label>
+        <input asp-for="Input.ProofOfPurchase" type="file" class="form-control" accept=".jpg,.jpeg,.png,.pdf" />
+        <div class="form-text">JPG, PNG, or PDF. Max 10MB.</div>
+        <span asp-validation-for="Input.ProofOfPurchase" class="text-danger"></span>
+    </div>
+
+    <button type="submit" class="btn btn-primary">Submit Claim</button>
+    </form>
+}
+
+@section Scripts {
+    @{ await Html.RenderPartialAsync("_ValidationScriptsPartial"); }
+}

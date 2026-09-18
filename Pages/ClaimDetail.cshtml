@@ -1,0 +1,195 @@
+@page "{id:int}"
+@model WarrantyClaims.Pages.ClaimDetailModel
+@using Microsoft.AspNetCore.Mvc.Rendering
+@using WarrantyClaims.Models
+@{
+    ViewData["Title"] = "Claim Detail";
+}
+
+<h1>@ViewData["Title"]</h1>
+
+<p><a asp-page="/Index">&larr; Back to Claims</a></p>
+
+@if (Model.IsAgentVerified)
+{
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <span class="text-muted">Signed in as <strong>@Model.VerifiedAgentName</strong></span>
+        <form method="post" asp-page-handler="Logout" class="m-0">
+            <button type="submit" class="btn btn-link btn-sm p-0">Log out</button>
+        </form>
+    </div>
+}
+
+@if (!string.IsNullOrEmpty(Model.StatusMessage))
+{
+    <div class="alert alert-success" role="alert">@Model.StatusMessage</div>
+}
+
+@if (!string.IsNullOrEmpty(Model.ErrorMessage))
+{
+    <div class="alert alert-danger" role="alert">@Model.ErrorMessage</div>
+}
+
+@if (Model.IsManufacturerDeadlineUrgent)
+{
+    <div class="alert alert-danger" role="alert">
+        <strong>Warning:</strong> The manufacturer deadline for this claim
+        (@Model.Claim.ManufacturerDeadline!.Value.ToString("d")) is within 3 days or has already passed.
+    </div>
+}
+
+@if (Model.IsSlaBreached)
+{
+    <div class="alert alert-warning" role="alert">
+        <strong>Needs attention:</strong> This claim has been in Submitted status for over 48 hours without being reviewed.
+    </div>
+}
+
+<dl class="row">
+    <dt class="col-sm-3">Customer Name</dt>
+    <dd class="col-sm-9">@Model.Claim.CustomerName</dd>
+
+    <dt class="col-sm-3">Customer Email</dt>
+    <dd class="col-sm-9">@Model.Claim.CustomerEmail</dd>
+
+    <dt class="col-sm-3">Product Name</dt>
+    <dd class="col-sm-9">@Model.Claim.ProductName</dd>
+
+    <dt class="col-sm-3">Serial Number</dt>
+    <dd class="col-sm-9">@Model.Claim.SerialNumber</dd>
+
+    <dt class="col-sm-3">Purchase Date</dt>
+    <dd class="col-sm-9">@Model.Claim.PurchaseDate.ToString("d")</dd>
+
+    <dt class="col-sm-3">Claim Type</dt>
+    <dd class="col-sm-9">@Model.Claim.ClaimType</dd>
+
+    <dt class="col-sm-3">Issue Description</dt>
+    <dd class="col-sm-9">@Model.Claim.IssueDescription</dd>
+
+    <dt class="col-sm-3">Status</dt>
+    <dd class="col-sm-9">@Model.Claim.Status</dd>
+
+    <dt class="col-sm-3">Assigned Agent</dt>
+    <dd class="col-sm-9">@(Model.Claim.AssignedAgent ?? "-")</dd>
+
+    <dt class="col-sm-3">Last Updated By</dt>
+    <dd class="col-sm-9">@(Model.Claim.LastUpdatedBy ?? "-")</dd>
+
+    <dt class="col-sm-3">Manufacturer Deadline</dt>
+    <dd class="col-sm-9">@(Model.Claim.ManufacturerDeadline?.ToString("d") ?? "-")</dd>
+
+    <dt class="col-sm-3">Warranty Expiry</dt>
+    <dd class="col-sm-9">@(Model.Claim.WarrantyExpiry?.ToString("d") ?? "-")</dd>
+
+    <dt class="col-sm-3">Submitted Date</dt>
+    <dd class="col-sm-9">@Model.Claim.SubmittedDate.ToString("g")</dd>
+
+    <dt class="col-sm-3">Photo</dt>
+    <dd class="col-sm-9">
+        @if (!string.IsNullOrEmpty(Model.Claim.PhotoPath))
+        {
+            var photoUrl = "/uploads/" + System.IO.Path.GetFileName(Model.Claim.PhotoPath);
+            <a href="@photoUrl" target="_blank">
+                <img src="@photoUrl" alt="Claim photo" style="max-width:200px;max-height:200px;" class="img-thumbnail" />
+            </a>
+        }
+        else
+        {
+            <span>-</span>
+        }
+    </dd>
+
+    <dt class="col-sm-3">Receipt</dt>
+    <dd class="col-sm-9">
+        @if (!string.IsNullOrEmpty(Model.Claim.ReceiptPath))
+        {
+            var receiptUrl = "/uploads/" + System.IO.Path.GetFileName(Model.Claim.ReceiptPath);
+            <a href="@receiptUrl" target="_blank">View Receipt</a>
+        }
+        else
+        {
+            <span>-</span>
+        }
+    </dd>
+
+    <dt class="col-sm-3">Proof of Purchase</dt>
+    <dd class="col-sm-9">
+        @if (!string.IsNullOrEmpty(Model.Claim.ProofOfPurchasePath))
+        {
+            var proofUrl = "/uploads/" + System.IO.Path.GetFileName(Model.Claim.ProofOfPurchasePath);
+            var proofExtension = System.IO.Path.GetExtension(Model.Claim.ProofOfPurchasePath).ToLowerInvariant();
+            if (proofExtension is ".jpg" or ".jpeg" or ".png")
+            {
+                <a href="@proofUrl" target="_blank">
+                    <img src="@proofUrl" alt="Proof of purchase" style="max-width:200px;max-height:200px;" class="img-thumbnail" />
+                </a>
+            }
+            else
+            {
+                <a href="@proofUrl" target="_blank">View Proof of Purchase</a>
+            }
+        }
+        else
+        {
+            <span>-</span>
+        }
+    </dd>
+</dl>
+
+<hr />
+
+<h2>Update Claim</h2>
+
+@if (!Model.IsAgentVerified)
+{
+    <div class="pin-entry-wrapper">
+        <form method="post" asp-page-handler="VerifyPin">
+            <h5 class="mb-3">Enter Agent PIN</h5>
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+            <div class="pin-boxes mb-3" data-hidden-target="PinInput">
+                <input type="text" inputmode="numeric" pattern="[0-9]*" maxlength="1" class="form-control pin-digit-input" autocomplete="off" autofocus />
+                <input type="text" inputmode="numeric" pattern="[0-9]*" maxlength="1" class="form-control pin-digit-input" autocomplete="off" />
+                <input type="text" inputmode="numeric" pattern="[0-9]*" maxlength="1" class="form-control pin-digit-input" autocomplete="off" />
+                <input type="text" inputmode="numeric" pattern="[0-9]*" maxlength="1" class="form-control pin-digit-input" autocomplete="off" />
+            </div>
+            <input type="hidden" id="PinInput" name="PinInput" />
+            <span asp-validation-for="PinInput" class="text-danger d-block mb-2"></span>
+
+            <button type="submit" class="btn btn-primary">Continue</button>
+        </form>
+    </div>
+}
+else
+{
+    <form method="post">
+        <div class="mb-3">
+            <label asp-for="Status" class="form-label"></label>
+            <select asp-for="Status" class="form-select" asp-items="Html.GetEnumSelectList<ClaimStatus>()"></select>
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="SelectedAssignedAgent" class="form-label">Assigned Agent</label>
+            <select asp-for="SelectedAssignedAgent" class="form-select" asp-items="@(new SelectList(Model.AgentNames))">
+                <option value="">-- Unassigned --</option>
+            </select>
+            <div class="form-text">Leave as-is to keep the current assignment, or pick a different agent to reassign this claim.</div>
+        </div>
+
+        <button type="submit" class="btn btn-primary">Save</button>
+    </form>
+}
+
+@if (Model.IsAgentVerified)
+{
+    <hr />
+
+    <form method="post" asp-page-handler="Delete" onsubmit="return confirm('Are you sure?');">
+        <button type="submit" class="btn btn-danger">Delete Claim</button>
+    </form>
+}
+
+@section Scripts {
+    @{ await Html.RenderPartialAsync("_ValidationScriptsPartial"); }
+}
